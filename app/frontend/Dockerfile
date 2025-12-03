@@ -1,0 +1,33 @@
+# Use the official Node.js runtime as the base image for building
+FROM node:20-alpine AS build
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy package.json and package-lock.json (if available) to the container
+COPY app/frontend/package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy the rest of the application code to the container
+COPY app/frontend/ .
+
+# Build the frontend application
+RUN npm run build
+
+# Use a lightweight web server to serve the built application
+FROM nginx:alpine
+
+# Copy the built frontend application from the build stage
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Copy custom nginx configuration (optional but recommended for production)
+# If you don't have a custom nginx.conf, you can use the default one by removing this line
+# COPY app/frontend/nginx.conf /etc/nginx/nginx.conf
+
+# Expose the port the app runs on
+EXPOSE 80
+
+# Start nginx to serve the application
+CMD ["nginx", "-g", "daemon off;"]

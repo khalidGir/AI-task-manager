@@ -1,0 +1,98 @@
+# Development Docker Compose file for AI Task Manager
+version: '3.8'
+
+services:
+  # MongoDB service
+  mongodb:
+    image: mongo:5
+    container_name: aitaskmanager-mongo-dev
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data_dev:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+
+  # Express Backend (Development)
+  express-backend-dev:
+    build:
+      context: ./src/backend/express
+      dockerfile: Dockerfile.dev
+    container_name: aitaskmanager-express-dev
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongodb
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/aitaskmanager
+      - NODE_ENV=development
+    volumes:
+      - ./src/backend/express:/app
+      - /app/node_modules
+    command: npm run dev
+
+  # NestJS Backend (Development)
+  nest-backend-dev:
+    build:
+      context: ./src/backend/nest
+      dockerfile: Dockerfile.dev
+    container_name: aitaskmanager-nest-dev
+    ports:
+      - "5001:5001"
+    depends_on:
+      - mongodb
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/aitaskmanager
+      - NODE_ENV=development
+    volumes:
+      - ./src/backend/nest:/app
+      - /app/node_modules
+    command: npm run start:dev
+
+  # FastAPI Backend (Development)
+  fastapi-backend-dev:
+    build:
+      context: ./src/backend/fastapi
+      dockerfile: Dockerfile.dev
+    container_name: aitaskmanager-fastapi-dev
+    ports:
+      - "5002:5002"
+    depends_on:
+      - mongodb
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/aitaskmanager
+    volumes:
+      - ./src/backend/fastapi:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 5002 --reload
+
+  # React Frontend (Development)
+  react-frontend-dev:
+    build:
+      context: ./src/frontend/react
+      dockerfile: Dockerfile.dev
+    container_name: aitaskmanager-react-dev
+    ports:
+      - "3000:3000"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ./src/frontend/react:/app
+      - /app/node_modules
+    command: npm start
+
+  # Vue Frontend (Development)
+  vue-frontend-dev:
+    build:
+      context: ./src/frontend/vue
+      dockerfile: Dockerfile.dev
+    container_name: aitaskmanager-vue-dev
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./src/frontend/vue:/app
+      - /app/node_modules
+    command: npm run serve
+
+volumes:
+  mongodb_data_dev:

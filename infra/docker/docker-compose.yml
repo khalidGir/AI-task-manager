@@ -1,0 +1,93 @@
+# Docker Compose file for AI Task Manager
+version: '3.8'
+
+services:
+  # MongoDB service
+  mongodb:
+    image: mongo:5
+    container_name: aitaskmanager-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+
+  # Express Backend
+  express-backend:
+    build:
+      context: ./src/backend/express
+      dockerfile: Dockerfile
+    container_name: aitaskmanager-express
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongodb
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/aitaskmanager
+      - NODE_ENV=production
+    volumes:
+      - ./src/backend/express:/app
+      - /app/node_modules
+
+  # NestJS Backend
+  nest-backend:
+    build:
+      context: ./src/backend/nest
+      dockerfile: Dockerfile
+    container_name: aitaskmanager-nest
+    ports:
+      - "5001:5001"
+    depends_on:
+      - mongodb
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/aitaskmanager
+      - NODE_ENV=production
+    volumes:
+      - ./src/backend/nest:/app
+      - /app/node_modules
+
+  # FastAPI Backend
+  fastapi-backend:
+    build:
+      context: ./src/backend/fastapi
+      dockerfile: Dockerfile
+    container_name: aitaskmanager-fastapi
+    ports:
+      - "5002:5002"
+    depends_on:
+      - mongodb
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/aitaskmanager
+    volumes:
+      - ./src/backend/fastapi:/app
+
+  # React Frontend
+  react-frontend:
+    build:
+      context: ./src/frontend/react
+      dockerfile: Dockerfile
+    container_name: aitaskmanager-react
+    ports:
+      - "3000:80"
+    depends_on:
+      - express-backend
+      - nest-backend
+      - fastapi-backend
+
+  # Vue Frontend
+  vue-frontend:
+    build:
+      context: ./src/frontend/vue
+      dockerfile: Dockerfile
+    container_name: aitaskmanager-vue
+    ports:
+      - "8080:80"
+    depends_on:
+      - express-backend
+      - nest-backend
+      - fastapi-backend
+
+volumes:
+  mongodb_data:

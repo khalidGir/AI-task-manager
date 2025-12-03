@@ -1,0 +1,37 @@
+{
+  "name": "ai-task-manager",
+  "version": "1.0.0",
+  "description": "AI-Powered Task Manager - A full-stack application with automated prioritization",
+  "private": true,
+  "workspaces": [
+    "app/backend",
+    "app/frontend"
+  ],
+  "scripts": {
+    "dev": "node api.js && concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "node api.js && cd app/backend && npm run dev",
+    "dev:frontend": "node api.js && cd app/frontend && npm run dev",
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "test:backend": "cd app/backend && npm run test",
+    "test:frontend": "cd app/frontend && npm run test:unit",
+    "docker:build": "docker-compose -f docker-compose.prod.yml build",
+    "docker:up": "docker-compose -f docker-compose.prod.yml up -d",
+    "docker:down": "docker-compose -f docker-compose.prod.yml down"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  },
+  "keywords": [
+    "task-manager",
+    "ai",
+    "productivity",
+    "typescript",
+    "react",
+    "express",
+    "postgresql",
+    "docker"
+  ],
+  "author": "AI Task Manager Team",
+  "license": "MIT"
+}
